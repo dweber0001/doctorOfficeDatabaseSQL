@@ -1,6 +1,7 @@
-DOCTOR OFFICE DATABASE	 Denise Weber
+DOCTOR OFFICE SQL DATABASE	 Denise Weber
 
-//create 7 tables for doctor’s office
+//create 7 linked tables for doctor’s office - see ERD in ReadMe
+//constraints added at creation and later
 
 CREATE TABLE bill
 (bill# NUMBER(5) CONSTRAINT bill_pk PRIMARY KEY,
@@ -68,7 +69,7 @@ CONSTRAINT salesRep_repID_fk FOREIGN KEY(staffID)
 REFERENCES medStaff(staffID));
 
 
-
+//adding records to tables
 INSERT INTO bill(bill#, bill_amt, amt_pd, date_pd, bal_due, bill_status, account#) 
 VALUES(00101,'50.00','50.00','27-DEC-20', '0.00','Y', '0001Jones');
 INSERT INTO bill(bill#, bill_amt, amt_pd, date_pd, bal_due, bill_status, account#)
@@ -182,6 +183,7 @@ VALUES('001001', 'Mary', 'Smith', 8772025522, 'AstraZenica', TO_DATE('27-NOV-202
 INSERT INTO salesRep(repID, fName, lName, phone, company, visitDateTime, staffID)
 VALUES('001007', 'Deb', 'Parker', 8778068818, 'AbbVie', TO_DATE('27-NOV-2020 1:00 PM', 'DD-MON-YYYY HH:MI PM'),'203');
 
+//changes to tables, add constraints, modify
 ALTER TABLE bill
 ADD CONSTRAINT bill_bill#_fk FOREIGN KEY(account#)
 REFERENCES patientAcct(account#);
@@ -208,6 +210,7 @@ MODIFY (reason DEFAULT 'regular checkup');
 ALTER TABLE appointment
 ADD CONSTRAINT appointment_ptSeen_status_ck CHECK(ptSeen_status IN('Y','N'));
 
+//Queries column alias, arithmetic operations, remove duplicates, //concatenation  
 
 SELECT fName as "First Name", lName "Last Name"
 FROM salesRep;
@@ -226,6 +229,10 @@ SELECT fName as "First Name", lName "Last Name",
 FROM patient
 WHERE zip='44685';
 
+//Queries to restrict rows using criteria and compound criteria  
+//Range criteria (between), IN operator. LIKE operator with wildcards. 
+//Ordering of output.
+
 SELECT lName
 FROM patient
 WHERE lName BETWEEN 'A' AND 'M';
@@ -241,6 +248,8 @@ WHERE lName LIKE 'J%';
 SELECT * FROM patient
 ORDER BY lName, fName;
 
+//Joins - Query that joins 3 tables and limits output. Query with outer join.  //Query with a non-equality join. Query using set operation.
+
 SELECT p.lName, p.fName, a.reason, TO_CHAR(a.apptDateTime,'DD-MON-YYYY HH:MI AM')AS date_output, d.dr_lName
 FROM patient p JOIN appointment a USING (patientID)
 JOIN doctor d USING (doctorID)
@@ -251,12 +260,14 @@ FROM patientAcct p LEFT OUTER JOIN bill b
 ON p.account# = b.account#;
 WHERE b.amt_pd IS NULL;
 
-
 SELECT lName as "medStaff"
 FROM medStaff
 UNION ALL
 SELECT dr_lName as "doctor"
 FROM doctor;
+
+//Single row functions Query with Initcap, substrings, round, to_char (used //with dates, NVL, cases)
+
 
 SELECT INITCAP(fName), INITCAP(lName)
 FROM patient;
@@ -290,6 +301,8 @@ ELSE 'Level 5'
 END "Risk Evaluation Level"
 FROM patient;
 
+//Group functions Query with sum and average, count, min and max. Group by //with single table, grouping set or cube  
+
 SELECT COUNT(bill_amt), SUM(bal_due) "Total Outstanding Balance"
 FROM bill;
 
@@ -300,10 +313,18 @@ SELECT MAX(lName) FROM patient;
 
 SELECT MIN(lName) FROM patient;
 
+SELECT account#, COUNT(*)
+FROM patient
+GROUP BY account#;
+
+//Multi-column subquery with where clause. 
+
 SELECT patientID, fName, lName
 FROM patient
 WHERE lName LIKE 'W%';
 
+//Views: Create a simple view. Create a view with a check 
+Option. Update a record in a simple view. Perform a TOP-N analysis
 
 CREATE VIEW MEDSTAFF_VIEW
 AS SELECT * FROM MEDSTAFF;
@@ -325,6 +346,7 @@ FROM bill
 ORDER BY bal_due DESC
 fetch first 25 percent rows only;
 
+//Sequences and indexes: Create sequence and use when inserting records. //List all sequences using a query. Create an index. List all indexes using a // query. 
 
 CREATE SEQUENCE patient_patientID_seq
 INCREMENT BY 1
